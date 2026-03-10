@@ -1,0 +1,56 @@
+name: wiandlo
+description: A mindfulness and self-inquiry application.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Audio player for guided sessions
+  just_audio: ^0.9.40
+
+  # Rive animations (the 5 worlds)
+  rive: ^0.13.0
+
+  # Firebase
+  firebase_core: ^3.3.0
+  firebase_auth: ^5.1.4
+  cloud_firestore: ^5.2.1
+  firebase_storage: ^12.1.3
+
+  # Local storage (offline journal + progress)
+  hive_flutter: ^1.1.0
+
+  # Local notifications (daily inquiry reminder)
+  flutter_local_notifications: ^17.2.2
+
+  # Simple key-value (session count, onboarding state)
+  shared_preferences: ^2.3.2
+
+  # Google fonts
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  riverpod_generator: ^2.4.3
+  build_runner: ^2.4.11
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audio/
+    - assets/rive/
+    - assets/images/
