@@ -7,6 +7,24 @@ import 'ground_complete_screen.dart';
 import 'widgets/world_painter.dart';
 import 'widgets/growth_stage.dart';
 
+/// Approximate progress (0.0–1.0) toward the *next* growth stage,
+/// mirroring the thresholds in GrowthStageHelper.fromSessionCount.
+/// Purely cosmetic — kept local to this screen so growth_stage.dart
+/// stays untouched.
+double _stageProgress(int count) {
+  const starts = [0, 1, 4, 8, 15, 26, 41];
+  for (int i = 0; i < starts.length; i++) {
+    final start = starts[i];
+    final isLast = i == starts.length - 1;
+    final end = isLast ? start + 15 : starts[i + 1];
+    if (count < end || isLast) {
+      final span = (end - start).clamp(1, 999999);
+      return ((count - start) / span).clamp(0.0, 1.0);
+    }
+  }
+  return 1.0;
+}
+
 class GroundWorldScreen extends StatefulWidget {
   const GroundWorldScreen({super.key});
 
@@ -117,25 +135,35 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
           ),
 
           // ── Top bar ───────────────────────────────────────────────
+          // Stack-based so the GROUND label is truly centered
+          // regardless of the back icon's width (the old Row +
+          // double-Spacer layout was slightly off-axis).
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                child: Row(
+              child: SizedBox(
+                height: 44,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Icon(
-                        Icons.arrow_back_ios,
-                        color: AppColors.ground.withValues(alpha: 0.35),
-                        size: 16,
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                        ),
+                        child: GestureDetector(
+                          onTap: () => Navigator.of(context).pop(),
+                          child: Icon(
+                            Icons.arrow_back_ios,
+                            color: AppColors.ground.withValues(alpha: 0.35),
+                            size: 16,
+                          ),
+                        ),
                       ),
                     ),
-                    const Spacer(),
                     Text(
                       'GROUND',
                       style: AppTextStyles.trackLabel(
@@ -143,8 +171,6 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
                         color: AppColors.ground.withValues(alpha: 0.35),
                       ),
                     ),
-                    const Spacer(),
-                    const SizedBox(width: 16),
                   ],
                 ),
               ),
@@ -159,19 +185,34 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
             child: Center(
               child: GestureDetector(
                 onTap: _beginSession,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppColors.ground.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(40),
-                    color: AppColors.ground.withValues(alpha: 0.04),
-                  ),
+                child: AnimatedBuilder(
+                  animation: _breathController,
+                  builder: (_, child) {
+                    final breath = _breathController.value;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: AppColors.ground.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(40),
+                        color: AppColors.ground.withValues(alpha: 0.04),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.ground
+                                .withValues(alpha: 0.05 + breath * 0.07),
+                            blurRadius: 14 + breath * 10,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: child,
+                    );
+                  },
                   child: Text(
                     _sessionCount == 0
                         ? 'begin the cosmic arrival'
@@ -186,18 +227,44 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
             ),
           ),
 
-          // ── Stage description ─────────────────────────────────────
+          // ── Stage description + progress ───────────────────────────
           Positioned(
             bottom: 24,
             left: 0,
             right: 0,
             child: Center(
-              child: Text(
-                GrowthStageHelper.description(_currentStage),
-                style: AppTextStyles.ui(
-                  size: 10,
-                  color: AppColors.ground.withValues(alpha: 0.22),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    GrowthStageHelper.description(_currentStage),
+                    style: AppTextStyles.ui(
+                      size: 10,
+                      color: AppColors.ground.withValues(alpha: 0.22),
+                    ),
+                  ),
+                  if (_currentStage != GrowthStage.forest) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 64,
+                      height: 2,
+                      decoration: BoxDecoration(
+                        color: AppColors.ground.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: _stageProgress(_sessionCount),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.ground.withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
