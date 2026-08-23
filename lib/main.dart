@@ -5,7 +5,6 @@ import 'screens/overview/overview_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const WiandLoApp());
 }
 
