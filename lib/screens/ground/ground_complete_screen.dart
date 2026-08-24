@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/safe_harbor.dart';
 import 'widgets/growth_stage.dart';
 
 class GroundCompleteScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class GroundCompleteScreen extends StatefulWidget {
 class _GroundCompleteScreenState extends State<GroundCompleteScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _fade;
+  late AnimationController _plantFlash;
 
   @override
   void initState() {
@@ -27,11 +29,17 @@ class _GroundCompleteScreenState extends State<GroundCompleteScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1100),
     )..forward();
+
+    _plantFlash = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..forward();
   }
 
   @override
   void dispose() {
     _fade.dispose();
+    _plantFlash.dispose();
     super.dispose();
   }
 
@@ -40,8 +48,10 @@ class _GroundCompleteScreenState extends State<GroundCompleteScreen>
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
       child: Scaffold(
-        backgroundColor: Colors.black.withValues(alpha: 0.82),
-        body: FadeTransition(
+        backgroundColor: Colors.black.withValues(alpha: 0.88),
+        body: Stack(
+          children: [
+        FadeTransition(
           opacity: CurvedAnimation(parent: _fade, curve: Curves.easeOut),
           child: Center(
             child: Padding(
@@ -49,13 +59,29 @@ class _GroundCompleteScreenState extends State<GroundCompleteScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Brief plant emergence
+                  AnimatedBuilder(
+                    animation: _plantFlash,
+                    builder: (_, __) {
+                      final t = _plantFlash.value;
+                      final opacity = t < 0.3
+                          ? t / 0.3
+                          : t > 0.7
+                              ? (1 - t) / 0.3
+                              : 1.0;
+                      return Opacity(
+                        opacity: opacity,
+                        child: Icon(
+                          Icons.eco_outlined,
+                          color: AppColors.ground.withValues(alpha: 0.45),
+                          size: 32,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
                   if (widget.didGrow) ...[
-                    Icon(
-                      Icons.eco_outlined,
-                      color: AppColors.ground.withValues(alpha: 0.55),
-                      size: 28,
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
                     Text(
                       'something shifted',
                       textAlign: TextAlign.center,
@@ -105,6 +131,9 @@ class _GroundCompleteScreenState extends State<GroundCompleteScreen>
             ),
           ),
         ),
+        const SafeHarbor(),
+      ],
+      ),
       ),
     );
   }

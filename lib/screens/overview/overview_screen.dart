@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/safe_harbor.dart';
 import '../ground/ground_world_screen.dart';
+import '../open/daily_inquiry_screen.dart';
 
 class OverviewScreen extends StatefulWidget {
   const OverviewScreen({super.key});
@@ -15,6 +18,7 @@ class _OverviewScreenState extends State<OverviewScreen>
   late final AnimationController _entrance;
   late final AnimationController _breath;
   late final AnimationController _loop;
+  int _groundSessions = 0;
 
   @override
   void initState() {
@@ -33,6 +37,15 @@ class _OverviewScreenState extends State<OverviewScreen>
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
+
+    _loadGroundProgress();
+  }
+
+  Future<void> _loadGroundProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final count = prefs.getInt('ground_sessions') ?? 0;
+    if (!mounted) return;
+    setState(() => _groundSessions = count);
   }
 
   @override
@@ -52,7 +65,6 @@ class _OverviewScreenState extends State<OverviewScreen>
             parent: animation,
             curve: Curves.easeInCubic,
           );
-
           return Stack(
             children: [
               ScaleTransition(
@@ -76,7 +88,11 @@ class _OverviewScreenState extends State<OverviewScreen>
                   ).animate(
                     CurvedAnimation(
                       parent: animation,
-                      curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic),
+                      curve: const Interval(
+                        0.4,
+                        1.0,
+                        curve: Curves.easeOutCubic,
+                      ),
                     ),
                   ),
                   child: child,
@@ -94,67 +110,127 @@ class _OverviewScreenState extends State<OverviewScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: CurvedAnimation(parent: _entrance, curve: Curves.easeOut),
-          child: Column(
-            children: [
-              _ZoneShell(
-                flex: 20,
-                trackColor: AppColors.open,
-                label: 'OPEN',
-                sublabel: 'today\'s question is waiting',
-                locked: true,
-                onTap: () {},
-                motif: _RippleMotif(color: AppColors.open, loop: _loop),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: FadeTransition(
+              opacity: CurvedAnimation(
+                parent: _entrance,
+                curve: Curves.easeOut,
               ),
-              _ZoneShell(
-                flex: 14,
-                trackColor: AppColors.live,
-                label: 'LIVE',
-                sublabel: 'from fullness, not emptiness',
-                locked: true,
-                onTap: () {},
-                motif: _PulseDotMotif(color: AppColors.live, breath: _breath),
+              child: Column(
+                children: [
+                  _ZoneShell(
+  flex: 20,
+  trackColor: AppColors.open,
+  label: 'OPEN',
+  sublabel: 'enter the field',
+  locked: true,
+  onTap: () {},
+  motif: _InquiryBubbleMotif(
+    color: AppColors.open,
+    loop: _loop,
+  ),
+),
+                  _ZoneShell(
+                    flex: 14,
+                    trackColor: AppColors.live,
+                    label: 'LIVE',
+                    sublabel: 'from fullness, not emptiness',
+                    locked: true,
+                    onTap: () {},
+                    motif: _PulseDotMotif(
+                      color: AppColors.live,
+                      breath: _breath,
+                    ),
+                  ),
+                  _ZoneShell(
+                    flex: 20,
+                    trackColor: AppColors.see,
+                    label: 'SEE',
+                    sublabel: 'understand your mind',
+                    locked: true,
+                    onTap: () {},
+                    motif: _DriftOrbMotif(
+                      color: AppColors.see,
+                      breath: _breath,
+                      loop: _loop,
+                    ),
+                  ),
+                  _ZoneShell(
+                    flex: 28,
+                    trackColor: AppColors.ground,
+                    label: 'GROUND',
+                    sublabel: 'quiet the noise',
+                    locked: false,
+                    onTap: () => _diveInto(
+                      context,
+                      const GroundWorldScreen(),
+                    ),
+                    motif: _GroundEcosystemMotif(
+                      color: AppColors.ground,
+                      breath: _breath,
+                      loop: _loop,
+                      sessionCount: _groundSessions,
+                    ),
+                  ),
+                  _ZoneShell(
+                    flex: 18,
+                    trackColor: AppColors.roots,
+                    label: 'ROOTS',
+                    sublabel: 'work with what runs you',
+                    locked: true,
+                    onTap: () {},
+                    motif: _RootsMotif(
+                      color: AppColors.roots,
+                      loop: _loop,
+                    ),
+                  ),
+                ],
               ),
-              _ZoneShell(
-                flex: 20,
-                trackColor: AppColors.see,
-                label: 'SEE',
-                sublabel: 'understand your mind',
-                locked: true,
-                onTap: () {},
-                motif: _DriftOrbMotif(color: AppColors.see, breath: _breath, loop: _loop),
-              ),
-              _ZoneShell(
-                flex: 28,
-                trackColor: AppColors.ground,
-                label: 'GROUND',
-                sublabel: 'quiet the noise',
-                locked: false,
-                onTap: () => _diveInto(context, const GroundWorldScreen()),
-                motif: _GroundMotif(color: AppColors.ground, breath: _breath, loop: _loop),
-              ),
-              _ZoneShell(
-                flex: 18,
-                trackColor: AppColors.roots,
-                label: 'ROOTS',
-                sublabel: 'work with what runs you',
-                locked: true,
-                onTap: () {},
-                motif: _RootsMotif(color: AppColors.roots, loop: _loop),
-              ),
-            ],
+            ),
           ),
-        ),
+                    
+                    Positioned(
+            left: 20,
+            bottom: 24,
+            child: GestureDetector(
+              onTap: () => _diveInto(
+                context,
+                DailyInquiryScreen(),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.open.withValues(alpha: 0.30),
+                  ),
+                  color: AppColors.open.withValues(alpha: 0.06),
+                ),
+                child: const Text(
+                  'DAILY INQUIRY',
+                  style: TextStyle(
+                    fontSize: 9,
+                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SafeHarbor(),
+        ],
       ),
     );
   }
 }
 
-// ── Zone shell: layout, press feedback, lock affordance ────
-// No background color, no border — just soft space for the
-// motif and label to breathe in.
+// ── Zone Shell ───────────────────────────────────────────────────
+
 class _ZoneShell extends StatefulWidget {
   final int flex;
   final Color trackColor;
@@ -202,8 +278,10 @@ class _ZoneShellState extends State<_ZoneShell> {
           decoration: BoxDecoration(
             gradient: RadialGradient(
               colors: [
-                widget.trackColor.withOpacity(
-                  widget.locked ? (_pressed ? 0.05 : 0.035) : (_pressed ? 0.09 : 0.06),
+                widget.trackColor.withValues(
+                  alpha: widget.locked
+                      ? (_pressed ? 0.05 : 0.035)
+                      : (_pressed ? 0.09 : 0.06),
                 ),
                 Colors.transparent,
               ],
@@ -223,8 +301,8 @@ class _ZoneShellState extends State<_ZoneShell> {
                     style: AppTextStyles.trackLabel(
                       size: widget.flex >= 24 ? 14 : 12,
                       color: widget.locked
-                          ? widget.trackColor.withOpacity(0.4)
-                          : widget.trackColor.withOpacity(0.9),
+                          ? widget.trackColor.withValues(alpha: 0.4)
+                          : widget.trackColor.withValues(alpha: 0.9),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -233,7 +311,9 @@ class _ZoneShellState extends State<_ZoneShell> {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.ui(
                       size: 9,
-                      color: Colors.white.withOpacity(widget.locked ? 0.18 : 0.28),
+                      color: Colors.white.withValues(
+                        alpha: widget.locked ? 0.18 : 0.28,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -245,7 +325,7 @@ class _ZoneShellState extends State<_ZoneShell> {
                   left: AppSpacing.md,
                   child: Icon(
                     Icons.lock_outline,
-                    color: widget.trackColor.withOpacity(0.22),
+                    color: widget.trackColor.withValues(alpha: 0.22),
                     size: 12,
                   ),
                 ),
@@ -257,7 +337,8 @@ class _ZoneShellState extends State<_ZoneShell> {
   }
 }
 
-// ── OPEN: expanding, fading ripple rings ────────────────────
+// ── Motifs ───────────────────────────────────────────────────────
+
 class _RippleMotif extends StatelessWidget {
   final Color color;
   final Animation<double> loop;
@@ -276,7 +357,10 @@ class _RippleMotif extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: color.withOpacity(opacity), width: 1),
+            border: Border.all(
+              color: color.withValues(alpha: opacity),
+              width: 1,
+            ),
           ),
         );
       },
@@ -295,7 +379,6 @@ class _RippleMotif extends StatelessWidget {
   }
 }
 
-// ── LIVE: a single breathing point of light ─────────────────
 class _PulseDotMotif extends StatelessWidget {
   final Color color;
   final Animation<double> breath;
@@ -315,10 +398,10 @@ class _PulseDotMotif extends StatelessWidget {
             height: 6 + t * 3,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withOpacity(0.5 + t * 0.4),
+              color: color.withValues(alpha: 0.5 + t * 0.4),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.25 + t * 0.25),
+                  color: color.withValues(alpha: 0.25 + t * 0.25),
                   blurRadius: 8 + t * 10,
                   spreadRadius: 1 + t * 2,
                 ),
@@ -331,7 +414,6 @@ class _PulseDotMotif extends StatelessWidget {
   }
 }
 
-// ── SEE: a breathing field with a drifting mote of thought ──
 class _DriftOrbMotif extends StatelessWidget {
   final Color color;
   final Animation<double> breath;
@@ -362,8 +444,8 @@ class _DriftOrbMotif extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      color.withOpacity(0.28),
-                      color.withOpacity(0.0),
+                      color.withValues(alpha: 0.28),
+                      color.withValues(alpha: 0.0),
                     ],
                   ),
                 ),
@@ -382,10 +464,10 @@ class _DriftOrbMotif extends StatelessWidget {
                     height: 4,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: color.withOpacity(0.8),
+                      color: color.withValues(alpha: 0.8),
                       boxShadow: [
                         BoxShadow(
-                          color: color.withOpacity(0.5),
+                          color: color.withValues(alpha: 0.5),
                           blurRadius: 6,
                           spreadRadius: 1,
                         ),
@@ -402,74 +484,6 @@ class _DriftOrbMotif extends StatelessWidget {
   }
 }
 
-// ── GROUND: a larger breathing glow with faint threads below ─
-class _GroundMotif extends StatelessWidget {
-  final Color color;
-  final Animation<double> breath;
-  final Animation<double> loop;
-
-  const _GroundMotif({
-    required this.color,
-    required this.breath,
-    required this.loop,
-  });
-
-  Widget _thread(double phaseOffset) {
-    return AnimatedBuilder(
-      animation: loop,
-      builder: (_, __) {
-        final phase = (loop.value + phaseOffset) % 1.0;
-        final wave = (sin(phase * 2 * pi) + 1) / 2;
-        return Container(
-          width: 1,
-          height: 16 + wave * 12,
-          color: color.withOpacity(0.15 + wave * 0.2),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 34),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedBuilder(
-            animation: breath,
-            builder: (_, __) => Container(
-              width: 70 + breath.value * 14,
-              height: 70 + breath.value * 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    color.withOpacity(0.3),
-                    color.withOpacity(0.0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _thread(0),
-              const SizedBox(width: 10),
-              _thread(0.33),
-              const SizedBox(width: 10),
-              _thread(0.66),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── ROOTS: a quiet branching network, gently pulsing ─────────
 class _RootsMotif extends StatelessWidget {
   final Color color;
   final Animation<double> loop;
@@ -486,7 +500,10 @@ class _RootsMotif extends StatelessWidget {
         child: AnimatedBuilder(
           animation: loop,
           builder: (_, __) => CustomPaint(
-            painter: _RootsPainter(color: color, animValue: loop.value),
+            painter: _RootsPainter(
+              color: color,
+              animValue: loop.value,
+            ),
           ),
         ),
       ),
@@ -514,7 +531,7 @@ class _RootsPainter extends CustomPainter {
     final opacity = 0.22 + wave * 0.18;
 
     final paint = Paint()
-      ..color = color.withOpacity(opacity)
+      ..color = color.withValues(alpha: opacity)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -533,5 +550,150 @@ class _RootsPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _RootsPainter old) => old.animValue != animValue;
+  bool shouldRepaint(covariant _RootsPainter old) =>
+      old.animValue != animValue;
+}
+
+// ── NEW: Inquiry Bubble (OPEN) ───────────────────────────────────
+
+class _InquiryBubbleMotif extends StatelessWidget {
+  final Color color;
+  final Animation<double> loop;
+
+  const _InquiryBubbleMotif({required this.color, required this.loop});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: AnimatedBuilder(
+        animation: loop,
+        builder: (_, __) {
+          final breathe = 0.6 + (sin(loop.value * 2 * pi) + 1) / 2 * 0.4;
+          return Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: color.withValues(alpha: 0.22 * breathe),
+                width: 1,
+              ),
+              color: color.withValues(alpha: 0.05 * breathe),
+            ),
+            child: Center(
+              child: Text(
+                '?',
+                style: AppTextStyles.ui(
+                  size: 14,
+                  color: color.withValues(alpha: 0.45 * breathe),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ── NEW: Ground Ecosystem Mini-Preview ───────────────────────────
+
+class _GroundEcosystemMotif extends StatelessWidget {
+  final Color color;
+  final Animation<double> breath;
+  final Animation<double> loop;
+  final int sessionCount;
+
+  const _GroundEcosystemMotif({
+    required this.color,
+    required this.breath,
+    required this.loop,
+    required this.sessionCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 34),
+      child: SizedBox(
+        width: 140,
+        height: 90,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([breath, loop]),
+          builder: (_, __) {
+            return CustomPaint(
+              painter: _MiniEcosystemPainter(
+                color: color,
+                breath: breath.value,
+                loop: loop.value,
+                plantCount: sessionCount.clamp(0, 8),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniEcosystemPainter extends CustomPainter {
+  final Color color;
+  final double breath;
+  final double loop;
+  final int plantCount;
+
+  _MiniEcosystemPainter({
+    required this.color,
+    required this.breath,
+    required this.loop,
+    required this.plantCount,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final baseY = size.height;
+    final paint = Paint()
+      ..strokeWidth = 1
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final orbPaint = Paint()
+      ..color = color.withValues(alpha: 0.06 + breath * 0.04)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(size.width / 2, baseY - 20),
+      28 + breath * 8,
+      orbPaint,
+    );
+
+    for (int i = 0; i < plantCount; i++) {
+      final x = size.width * (0.2 + (i / 8) * 0.6) + (i % 3 - 1) * 3.0;
+      final h = 12 + (i % 4) * 4.0;
+      final sway = sin((loop + i * 0.3) * 2 * pi) * 2;
+
+      paint.color = color.withValues(
+        alpha: 0.35 + sin((loop + i) * pi) * 0.15,
+      );
+
+      final path = Path()
+        ..moveTo(x, baseY)
+        ..lineTo(x + sway, baseY - h);
+      canvas.drawPath(path, paint);
+
+      if (i % 2 == 0) {
+        canvas.drawLine(
+          Offset(x + sway * 0.5, baseY - h * 0.6),
+          Offset(x + sway * 0.5 - 4, baseY - h * 0.6 - 3),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniEcosystemPainter old) =>
+      old.breath != breath ||
+      old.loop != loop ||
+      old.plantCount != plantCount;
 }

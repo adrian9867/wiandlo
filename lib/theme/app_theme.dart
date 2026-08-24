@@ -32,12 +32,17 @@ class AppTextStyles {
     );
 
   // UI text — clean sans
-  static TextStyle ui({double size = 14, Color color = AppColors.textPrimary}) =>
+  static TextStyle ui({
+    double size = 14,
+    Color color = AppColors.textPrimary,
+    double? height,
+  }) =>
     GoogleFonts.inter(
       fontSize: size,
       color: color,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.3,
+      height: height,
     );
 
   // Track label — spaced, quiet
