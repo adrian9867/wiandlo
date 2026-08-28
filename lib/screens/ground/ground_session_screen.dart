@@ -464,8 +464,9 @@ class _GroundSessionScreenState extends State<GroundSessionScreen>
           }
 
           if (_sessionSeconds >= _totalSessionSeconds) {
-            shouldEnd = true;
-          }
+  _sessionSeconds = _totalSessionSeconds;
+  shouldEnd = true;
+}
         });
 
         if (shouldEnd) {
@@ -489,10 +490,11 @@ class _GroundSessionScreenState extends State<GroundSessionScreen>
 
       _runBreathPhase(_phase);
 
-      if (widget.mode == SessionMode.guided ||
-          _selectedEnv.assetPath != null) {
-        await player.play();
-      }
+      if (widget.mode == SessionMode.guided) {
+  await player.play();
+} else if (_selectedEnv.assetPath != null) {
+  await _playEnvironmentAudio();
+}
 
       if (widget.mode == SessionMode.free) {
         _startSessionTimer();
@@ -625,38 +627,51 @@ class _GroundSessionScreenState extends State<GroundSessionScreen>
 
   // ── Free-session audio ────────────────────────────────────────
 
-  Future<void> _playEnvironmentAudio() async {
-    if (widget.mode != SessionMode.free || _isEnding) {
+Future<void> _playEnvironmentAudio() async {
+  if (widget.mode != SessionMode.free ||
+      _isEnding ||
+      _isPaused) {
+    return;
+  }
+
+  final player = QuickAudio.player;
+  final path = _selectedEnv.assetPath;
+
+  try {
+    await player.stop();
+
+    // Silence means no audio, but the session timer and
+    // breathing continue normally.
+    if (path == null) {
+      await player.setLoopMode(LoopMode.off);
       return;
     }
 
-    final player = QuickAudio.player;
-    final path = _selectedEnv.assetPath;
+    // The user's selected session duration is the authority.
+    // If the audio is shorter, it loops automatically.
+    // If the audio is longer, the session timer stops it
+    // when the selected duration expires.
+    await player.setLoopMode(LoopMode.one);
+    await player.setAsset(path);
 
+    if (!_isPaused &&
+        !_isEnding &&
+        mounted) {
+      await player.play();
+    }
+  } catch (e, stack) {
+    debugPrint(
+      'GROUND ENVIRONMENT AUDIO ERROR: $e',
+    );
+    debugPrint('$stack');
+
+    // Audio failure must never kill the meditation session.
     try {
       await player.stop();
-      await player.setLoopMode(LoopMode.one);
-
-      if (path == null) {
-        await player.stop();
-        return;
-      }
-
-      await player.setAsset(path);
-      await player.play();
-    } catch (e, stack) {
-      debugPrint(
-        'GROUND ENVIRONMENT AUDIO ERROR: $e',
-      );
-      debugPrint('$stack');
-
-      // A missing future environment asset should not
-      // crash the session. The timer/breathing can continue.
-      try {
-        await player.stop();
-      } catch (_) {}
-    }
+      await player.setLoopMode(LoopMode.off);
+    } catch (_) {}
   }
+}
 
   Future<void> _selectEnvironment(
     SoundEnvironment environment,
