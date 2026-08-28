@@ -465,12 +465,12 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
     final newStage = GrowthStageHelper.fromSessionCount(newCount);
     final didGrow = newStage.index > _currentStage.index;
 
+    if (!mounted) return;
+
     setState(() {
       _sessionCount = newCount;
       _currentStage = newStage;
     });
-
-    if (!mounted) return;
 
     await Navigator.of(context).push(
       PageRouteBuilder(
@@ -586,7 +586,7 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
             ),
           ),
           Positioned(
-            bottom: 80,
+            bottom: 80 + MediaQuery.of(context).padding.bottom,
             left: 0,
             right: 0,
             child: Center(
@@ -634,7 +634,7 @@ class _GroundWorldScreenState extends State<GroundWorldScreen>
             ),
           ),
           Positioned(
-            bottom: 28,
+            bottom: 28 + MediaQuery.of(context).padding.bottom,
             left: 0,
             right: 0,
             child: Center(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 
 /// Global audio helper using the single player instance.
@@ -107,7 +106,7 @@ class _SafeHarborState extends State<SafeHarbor>
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: widget.bottom,
+      bottom: widget.bottom + MediaQuery.of(context).padding.bottom,
       right: widget.right,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

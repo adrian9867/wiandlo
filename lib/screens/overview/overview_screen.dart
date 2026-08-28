@@ -23,6 +23,7 @@ class _OverviewScreenState extends State<OverviewScreen>
   @override
   void initState() {
     super.initState();
+
     _entrance = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -44,7 +45,9 @@ class _OverviewScreenState extends State<OverviewScreen>
   Future<void> _loadGroundProgress() async {
     final prefs = await SharedPreferences.getInstance();
     final count = prefs.getInt('ground_sessions') ?? 0;
+
     if (!mounted) return;
+
     setState(() => _groundSessions = count);
   }
 
@@ -65,20 +68,34 @@ class _OverviewScreenState extends State<OverviewScreen>
             parent: animation,
             curve: Curves.easeInCubic,
           );
+
           return Stack(
             children: [
               ScaleTransition(
-                scale: Tween<double>(begin: 1.0, end: 1.18).animate(curved),
+                scale: Tween<double>(
+                  begin: 1.0,
+                  end: 1.18,
+                ).animate(curved),
                 child: FadeTransition(
-                  opacity: Tween<double>(begin: 1.0, end: 0.0).animate(curved),
+                  opacity: Tween<double>(
+                    begin: 1.0,
+                    end: 0.0,
+                  ).animate(curved),
                   child: const OverviewScreen(),
                 ),
               ),
               FadeTransition(
-                opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                opacity: Tween<double>(
+                  begin: 0.0,
+                  end: 1.0,
+                ).animate(
                   CurvedAnimation(
                     parent: animation,
-                    curve: const Interval(0.4, 1.0, curve: Curves.easeOut),
+                    curve: const Interval(
+                      0.4,
+                      1.0,
+                      curve: Curves.easeOut,
+                    ),
                   ),
                 ),
                 child: SlideTransition(
@@ -121,22 +138,22 @@ class _OverviewScreenState extends State<OverviewScreen>
               child: Column(
                 children: [
                   _ZoneShell(
-  flex: 20,
-  trackColor: AppColors.open,
-  label: 'OPEN',
-  sublabel: 'enter the field',
-  locked: true,
-  onTap: () {},
-  motif: _InquiryBubbleMotif(
-    color: AppColors.open,
-    loop: _loop,
-  ),
-),
+                    flex: 20,
+                    trackColor: AppColors.open,
+                    label: 'OPEN',
+                    sublabel: 'coming soon',
+                    locked: true,
+                    onTap: () {},
+                    motif: _InquiryBubbleMotif(
+                      color: AppColors.open,
+                      loop: _loop,
+                    ),
+                  ),
                   _ZoneShell(
                     flex: 14,
                     trackColor: AppColors.live,
                     label: 'LIVE',
-                    sublabel: 'from fullness, not emptiness',
+                    sublabel: 'coming soon',
                     locked: true,
                     onTap: () {},
                     motif: _PulseDotMotif(
@@ -148,7 +165,7 @@ class _OverviewScreenState extends State<OverviewScreen>
                     flex: 20,
                     trackColor: AppColors.see,
                     label: 'SEE',
-                    sublabel: 'understand your mind',
+                    sublabel: 'coming soon',
                     locked: true,
                     onTap: () {},
                     motif: _DriftOrbMotif(
@@ -178,7 +195,7 @@ class _OverviewScreenState extends State<OverviewScreen>
                     flex: 18,
                     trackColor: AppColors.roots,
                     label: 'ROOTS',
-                    sublabel: 'work with what runs you',
+                    sublabel: 'coming soon',
                     locked: true,
                     onTap: () {},
                     motif: _RootsMotif(
@@ -190,14 +207,13 @@ class _OverviewScreenState extends State<OverviewScreen>
               ),
             ),
           ),
-                    
-                    Positioned(
+          Positioned(
             left: 20,
-            bottom: 24,
+            bottom: 24 + MediaQuery.of(context).padding.bottom,
             child: GestureDetector(
               onTap: () => _diveInto(
                 context,
-                DailyInquiryScreen(),
+                const DailyInquiryScreen(),
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -259,6 +275,7 @@ class _ZoneShellState extends State<_ZoneShell> {
 
   void _setPressed(bool value) {
     if (widget.locked) return;
+
     setState(() => _pressed = value);
   }
 
@@ -292,6 +309,7 @@ class _ZoneShellState extends State<_ZoneShell> {
             alignment: Alignment.center,
             children: [
               widget.motif,
+
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
@@ -319,14 +337,41 @@ class _ZoneShellState extends State<_ZoneShell> {
                   const SizedBox(height: 18),
                 ],
               ),
+
               if (widget.locked)
                 Positioned(
-                  top: 4,
-                  left: AppSpacing.md,
-                  child: Icon(
-                    Icons.lock_outline,
-                    color: widget.trackColor.withValues(alpha: 0.22),
-                    size: 12,
+                  top: 14,
+                  right: AppSpacing.md,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: widget.trackColor.withValues(alpha: 0.16),
+                      ),
+                      color: widget.trackColor.withValues(alpha: 0.025),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          color: widget.trackColor.withValues(alpha: 0.22),
+                          size: 10,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          'COMING SOON',
+                          style: AppTextStyles.trackLabel(
+                            size: 7,
+                            color: widget.trackColor.withValues(alpha: 0.28),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -339,51 +384,14 @@ class _ZoneShellState extends State<_ZoneShell> {
 
 // ── Motifs ───────────────────────────────────────────────────────
 
-class _RippleMotif extends StatelessWidget {
-  final Color color;
-  final Animation<double> loop;
-
-  const _RippleMotif({required this.color, required this.loop});
-
-  Widget _ring(double phaseOffset) {
-    return AnimatedBuilder(
-      animation: loop,
-      builder: (_, __) {
-        final phase = (loop.value + phaseOffset) % 1.0;
-        final size = 20 + phase * 44;
-        final opacity = (1 - phase).clamp(0.0, 1.0) * 0.6;
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: color.withValues(alpha: opacity),
-              width: 1,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [_ring(0), _ring(0.5)],
-      ),
-    );
-  }
-}
-
 class _PulseDotMotif extends StatelessWidget {
   final Color color;
   final Animation<double> breath;
 
-  const _PulseDotMotif({required this.color, required this.breath});
+  const _PulseDotMotif({
+    required this.color,
+    required this.breath,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -393,6 +401,7 @@ class _PulseDotMotif extends StatelessWidget {
         animation: breath,
         builder: (_, __) {
           final t = breath.value;
+
           return Container(
             width: 6 + t * 3,
             height: 6 + t * 3,
@@ -457,6 +466,7 @@ class _DriftOrbMotif extends StatelessWidget {
                 final angle = loop.value * 2 * pi;
                 final dx = cos(angle) * 26;
                 final dy = sin(angle) * 12;
+
                 return Transform.translate(
                   offset: Offset(dx, dy),
                   child: Container(
@@ -488,7 +498,10 @@ class _RootsMotif extends StatelessWidget {
   final Color color;
   final Animation<double> loop;
 
-  const _RootsMotif({required this.color, required this.loop});
+  const _RootsMotif({
+    required this.color,
+    required this.loop,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -515,12 +528,22 @@ class _RootsPainter extends CustomPainter {
   final Color color;
   final double animValue;
 
-  const _RootsPainter({required this.color, required this.animValue});
+  const _RootsPainter({
+    required this.color,
+    required this.animValue,
+  });
 
-  void _curve(Canvas canvas, Paint paint, Offset a, Offset c, Offset b) {
+  void _curve(
+    Canvas canvas,
+    Paint paint,
+    Offset a,
+    Offset c,
+    Offset b,
+  ) {
     final path = Path()
       ..moveTo(a.dx, a.dy)
       ..quadraticBezierTo(c.dx, c.dy, b.dx, b.dy);
+
     canvas.drawPath(path, paint);
   }
 
@@ -537,16 +560,46 @@ class _RootsPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final top = Offset(cx, 0);
-    _curve(canvas, paint, top, Offset(cx, size.height * 0.35),
-        Offset(cx, size.height * 0.6));
-    _curve(canvas, paint, Offset(cx, size.height * 0.35),
-        Offset(cx - 20, size.height * 0.5), Offset(cx - 44, size.height * 0.85));
-    _curve(canvas, paint, Offset(cx, size.height * 0.35),
-        Offset(cx + 20, size.height * 0.5), Offset(cx + 44, size.height * 0.85));
-    _curve(canvas, paint, Offset(cx - 44, size.height * 0.85),
-        Offset(cx - 50, size.height * 0.95), Offset(cx - 58, size.height));
-    _curve(canvas, paint, Offset(cx + 44, size.height * 0.85),
-        Offset(cx + 50, size.height * 0.95), Offset(cx + 58, size.height));
+
+    _curve(
+      canvas,
+      paint,
+      top,
+      Offset(cx, size.height * 0.35),
+      Offset(cx, size.height * 0.6),
+    );
+
+    _curve(
+      canvas,
+      paint,
+      Offset(cx, size.height * 0.35),
+      Offset(cx - 20, size.height * 0.5),
+      Offset(cx - 44, size.height * 0.85),
+    );
+
+    _curve(
+      canvas,
+      paint,
+      Offset(cx, size.height * 0.35),
+      Offset(cx + 20, size.height * 0.5),
+      Offset(cx + 44, size.height * 0.85),
+    );
+
+    _curve(
+      canvas,
+      paint,
+      Offset(cx - 44, size.height * 0.85),
+      Offset(cx - 50, size.height * 0.95),
+      Offset(cx - 58, size.height),
+    );
+
+    _curve(
+      canvas,
+      paint,
+      Offset(cx + 44, size.height * 0.85),
+      Offset(cx + 50, size.height * 0.95),
+      Offset(cx + 58, size.height),
+    );
   }
 
   @override
@@ -554,13 +607,16 @@ class _RootsPainter extends CustomPainter {
       old.animValue != animValue;
 }
 
-// ── NEW: Inquiry Bubble (OPEN) ───────────────────────────────────
+// ── Inquiry Bubble (OPEN) ────────────────────────────────────────
 
 class _InquiryBubbleMotif extends StatelessWidget {
   final Color color;
   final Animation<double> loop;
 
-  const _InquiryBubbleMotif({required this.color, required this.loop});
+  const _InquiryBubbleMotif({
+    required this.color,
+    required this.loop,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -569,7 +625,9 @@ class _InquiryBubbleMotif extends StatelessWidget {
       child: AnimatedBuilder(
         animation: loop,
         builder: (_, __) {
-          final breathe = 0.6 + (sin(loop.value * 2 * pi) + 1) / 2 * 0.4;
+          final breathe =
+              0.6 + (sin(loop.value * 2 * pi) + 1) / 2 * 0.4;
+
           return Container(
             width: 44,
             height: 44,
@@ -597,7 +655,7 @@ class _InquiryBubbleMotif extends StatelessWidget {
   }
 }
 
-// ── NEW: Ground Ecosystem Mini-Preview ───────────────────────────
+// ── Ground Ecosystem Mini-Preview ────────────────────────────────
 
 class _GroundEcosystemMotif extends StatelessWidget {
   final Color color;
@@ -653,6 +711,7 @@ class _MiniEcosystemPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final baseY = size.height;
+
     final paint = Paint()
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke
@@ -661,6 +720,7 @@ class _MiniEcosystemPainter extends CustomPainter {
     final orbPaint = Paint()
       ..color = color.withValues(alpha: 0.06 + breath * 0.04)
       ..style = PaintingStyle.fill;
+
     canvas.drawCircle(
       Offset(size.width / 2, baseY - 20),
       28 + breath * 8,
@@ -668,7 +728,9 @@ class _MiniEcosystemPainter extends CustomPainter {
     );
 
     for (int i = 0; i < plantCount; i++) {
-      final x = size.width * (0.2 + (i / 8) * 0.6) + (i % 3 - 1) * 3.0;
+      final x = size.width * (0.2 + (i / 8) * 0.6) +
+          (i % 3 - 1) * 3.0;
+
       final h = 12 + (i % 4) * 4.0;
       final sway = sin((loop + i * 0.3) * 2 * pi) * 2;
 
@@ -679,12 +741,19 @@ class _MiniEcosystemPainter extends CustomPainter {
       final path = Path()
         ..moveTo(x, baseY)
         ..lineTo(x + sway, baseY - h);
+
       canvas.drawPath(path, paint);
 
       if (i % 2 == 0) {
         canvas.drawLine(
-          Offset(x + sway * 0.5, baseY - h * 0.6),
-          Offset(x + sway * 0.5 - 4, baseY - h * 0.6 - 3),
+          Offset(
+            x + sway * 0.5,
+            baseY - h * 0.6,
+          ),
+          Offset(
+            x + sway * 0.5 - 4,
+            baseY - h * 0.6 - 3,
+          ),
           paint,
         );
       }

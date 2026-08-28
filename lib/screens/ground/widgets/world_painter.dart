@@ -55,7 +55,7 @@ class WorldPainter extends CustomPainter {
       Paint()..color = soilColor,
     );
     final linePaint = Paint()
-      ..color = Colors.brown.withOpacity(0.07)
+      ..color = Colors.brown.withValues(alpha: 0.07)
       ..strokeWidth = 0.5;
     for (int i = 0; i < 4; i++) {
       final y = soilY + 10 + i * 14.0;
@@ -74,7 +74,7 @@ class WorldPainter extends CustomPainter {
     final opacity = 0.12 + stage.index * 0.04;
 
     final paint = Paint()
-      ..color = const Color(0xFFA5D6A7).withOpacity(opacity)
+      ..color = const Color(0xFFA5D6A7).withValues(alpha: opacity)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -89,7 +89,7 @@ class WorldPainter extends CustomPainter {
 
     if (stage.index >= GrowthStage.youngTree.index) {
       final deepPaint = Paint()
-        ..color = const Color(0xFFA5D6A7).withOpacity(opacity + 0.08)
+        ..color = const Color(0xFFA5D6A7).withValues(alpha: opacity + 0.08)
         ..strokeWidth = 0.8
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
@@ -154,11 +154,11 @@ class WorldPainter extends CustomPainter {
 
   void _drawSeed(Canvas canvas, double x, double y, double scale) {
     final glow = Paint()
-      ..color = const Color(0xFFA5D6A7).withOpacity(0.10)
+      ..color = const Color(0xFFA5D6A7).withValues(alpha: 0.10)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14);
     canvas.drawCircle(Offset(x, y), 14 * scale, glow);
 
-    final seed = Paint()..color = const Color(0xFFA5D6A7).withOpacity(0.55);
+    final seed = Paint()..color = const Color(0xFFA5D6A7).withValues(alpha: 0.55);
     canvas.drawOval(
       Rect.fromCenter(
           center: Offset(x, y), width: 11 * scale, height: 15 * scale),
@@ -169,7 +169,7 @@ class WorldPainter extends CustomPainter {
   void _drawSprout(Canvas canvas, double x, double soilY, double h, double scale) {
     _drawSeed(canvas, x, soilY - 5, scale * 0.75);
     final paint = Paint()
-      ..color = const Color(0xFF81C784).withOpacity(0.65)
+      ..color = const Color(0xFF81C784).withValues(alpha: 0.65)
       ..strokeWidth = 1.8
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -178,7 +178,7 @@ class WorldPainter extends CustomPainter {
 
   void _drawStem(Canvas canvas, double x, double soilY, double h, double scale) {
     final paint = Paint()
-      ..color = const Color(0xFF558B2F).withOpacity(0.75)
+      ..color = const Color(0xFF558B2F).withValues(alpha: 0.75)
       ..strokeWidth = 2.8 * scale
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -188,7 +188,7 @@ class WorldPainter extends CustomPainter {
   void _drawLeaf(Canvas canvas, double x, double y,
       {required bool left, double scale = 1.0}) {
     final paint = Paint()
-      ..color = const Color(0xFF81C784).withOpacity(0.55)
+      ..color = const Color(0xFF81C784).withValues(alpha: 0.55)
       ..style = PaintingStyle.fill;
     final path = Path();
     final dir = left ? -1 : 1;
@@ -201,7 +201,7 @@ class WorldPainter extends CustomPainter {
 
   void _drawBlossoms(Canvas canvas, double cx, double cy, double anim) {
     final paint = Paint()
-      ..color = const Color(0xFFF8BBD9).withOpacity(0.45 + anim * 0.25)
+      ..color = const Color(0xFFF8BBD9).withValues(alpha: 0.45 + anim * 0.25)
       ..style = PaintingStyle.fill;
     for (int i = 0; i < 5; i++) {
       final angle = i * pi * 2 / 5;
@@ -215,13 +215,13 @@ class WorldPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(cx, cy),
       4 + anim * 1.5,
-      Paint()..color = const Color(0xFFFFF9C4).withOpacity(0.6 + anim * 0.2),
+      Paint()..color = const Color(0xFFFFF9C4).withValues(alpha: 0.6 + anim * 0.2),
     );
   }
 
   void _drawFireflies(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFFFE082).withOpacity(0.3 + animValue * 0.35)
+      ..color = const Color(0xFFFFE082).withValues(alpha: 0.3 + animValue * 0.35)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
     for (final pos in fireflies) {
       canvas.drawCircle(
